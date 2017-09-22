@@ -64,7 +64,7 @@ open http://localhost:8080/
 
 ## Verify
 
-After a few minutes both the server `dockerformac` should show up in the New Relic
+After a few minutes the server `dockerformac` should show up in the New Relic
 infrastucture UI, and the `demoapp` should show up in RPM.
 
 What we're exepecting to see but are not:
