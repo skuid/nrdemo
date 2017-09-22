@@ -1,0 +1,4 @@
+log_to_stdout: true
+custom_attributes:
+  environment: debug
+  region: laptop

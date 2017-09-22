@@ -1,0 +1,29 @@
+version: '3'
+services:
+  pinger:
+    image: alpine
+    volumes:
+    - ./ping.sh:/ping.sh
+    command: /ping.sh
+  demoapp:
+    build:
+      context: ./demoapp
+    ports:
+    - "8080:8080"
+    environment:
+      NEW_RELIC_LICENSE_KEY: '' # <<<<< Add License Key
+  nrinfra:
+    command: /usr/bin/newrelic-infra -config=/etc/newrelic/newrelic-infra.yml
+    environment:
+      NRIA_DISPLAY_NAME: 'dockerformac'
+      NRIA_LICENSE_KEY: '' # <<<<< Add License Key
+    image: newrelic/infrastructure:latest
+    privileged: true
+    network_mode: "host"
+    pid: "host"
+    volumes:
+    - /:/host:ro
+    - /etc/hostname:/etc/hostname:ro
+    - /etc/os-release:/etc/os-release:ro
+    - /var/run/docker.sock:/var/run/docker.sock
+    - './newrelic-infra.yml:/etc/newrelic/newrelic-infra.yml'

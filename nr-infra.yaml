@@ -1,0 +1,90 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    app: newrelic-infra
+    helm-release: nrinfra-newrelic-infrast
+  name: newrelic-infra-nrinfra
+  namespace: default
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: newrelic-infra
+      helm-release: nrinfra-newrelic-infrast
+  template:
+    metadata:
+      labels:
+        app: newrelic-infra
+        helm-release: nrinfra-newrelic-infrast
+      name: newrelic-infra
+    spec:
+      containers:
+      - args:
+        - /usr/bin/newrelic-infra
+        - -config=/etc/newrelic/newrelic-infra.yml
+        env:
+        - name: NRIA_LICENSE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: license.key
+              name: newrelic-infra-nrinfra.secret
+        - name: NRIA_DISPLAY_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        image: newrelic/infrastructure:latest
+        imagePullPolicy: Always
+        name: newrelic
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/newrelic
+          name: config-volume
+        - mountPath: /host
+          name: root
+          readOnly: true
+        - mountPath: /etc/hostname
+          name: etc-hostname
+          readOnly: true
+        - mountPath: /etc/os-release
+          name: etc-os-release
+          readOnly: true
+        - mountPath: /var/run/docker.sock
+          name: var-run-docker-sock
+      restartPolicy: Always
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: newrelic-infra.yml
+            path: newrelic-infra.yml
+          name: newrelic-infra-nrinfra.config
+        name: config-volume
+      - hostPath:
+          path: /etc/hostname
+        name: etc-hostname
+      - hostPath:
+          path: /etc/os-release
+        name: etc-os-release
+      - hostPath:
+          path: /
+        name: root
+      - hostPath:
+          path: /var/run/docker.sock
+        name: var-run-docker-sock
+  updateStrategy:
+    type: OnDelete
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: newrelic-infra-nrinfra.config
+  namespace: default
+data:
+  newrelic-infra.yml: |
+    log_to_stdout: true
+    custom_attributes:
+      environment: test
+      region: us-west-2
