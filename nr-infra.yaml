@@ -54,6 +54,8 @@ spec:
         - mountPath: /var/run/docker.sock
           name: var-run-docker-sock
       restartPolicy: Always
+      hostPID: True
+      hostNetwork: True
       volumes:
       - configMap:
           defaultMode: 420
